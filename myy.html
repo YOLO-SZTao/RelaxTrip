@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慢悠游 App 終極滿分完整版</title>
+    <style>
+        body { background: #000; margin:0; padding:40px 0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family: "PingFang TC", sans-serif; }
+        .iphone { width: 390px; height: 844px; background: #000; border-radius: 60px; box-shadow: 0 0 0 8px #111, 0 0 0 12px #222, inset 0 0 20px rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+        .screen { width: 100%; height: 100%; background: #f6f9fc; border-radius: 60px; overflow: hidden; position: relative; }
+        .status-bar { height: 44px; background: rgba(255,255,255,0.95); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; font-size: 17px; font-weight: 600; color: #000; }
+        .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 210px; height: 35px; background: #000; border-radius: 20px; }
+        .app-content { height: calc(100% - 44px); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; }
+        .app { max-width:420px; margin:0 auto; background:#f6f9fc; height:100%; display:flex; flex-direction:column; position: relative; }
+        .page { display:none; flex:1; overflow-y:auto; padding:20px; padding-bottom:140px; }
+        .page.active { display:block; }
+        .header { background:linear-gradient(135deg,#e0f2fe,#c8e6ff); padding:25px 20px; text-align:center; font-size:38px; color:#0277bd; font-weight:bold; }
+        .card { background:white; border-radius:25px; padding:25px; margin-bottom:25px; box-shadow:0 8px 25px rgba(0,0,0,0.08); }
+        .card-title { font-size:36px; color:#0277bd; margin:0 0 18px 0; }
+        .card-text { font-size:30px; color:#333; line-height:1.8; margin:15px 0; }
+        .big-btn { background:linear-gradient(135deg,#4fc3f7,#29b6f6); color:white; border:none; border-radius:30px; padding:20px; font-size:32px; font-weight:bold; margin:15px 0; width:100%; }
+        .btn-row { display:flex; gap:12px; margin-top:15px; }
+        .half-btn { flex:1; padding:18px; font-size:28px; border-radius:25px; text-align:center; }
+        .detail-btn { background:#ffb74d; color:#333; }
+        .enroll-btn { background:#81c784; color:white; }
+        .reminder-item { background:linear-gradient(135deg,#fff59d,#ffeb3b); border-radius:20px; padding:18px; margin:12px 0; font-size:30px; display:flex; justify-content:space-between; align-items:center; overflow:hidden; min-height:70px; }
+        .reminder-item .text { flex:1; padding-right:15px; word-break: break-word; }
+        .reminder-item button { background:#81c784; color:white; border:none; padding:12px 24px; border-radius:20px; font-size:26px; white-space:nowrap; flex-shrink:0; margin-left:10px; }
+        .confirmed .text { opacity:0.6; text-decoration:line-through; }
+        .confirmed button { background:#81c784 !important; }
+        .list-item { font-size:30px; margin:18px 0; padding:18px; background:#e8f5fe; border-radius:20px; cursor:pointer; }
+        .trip-info { font-size:26px; color:#666; margin:8px 0; }
+        .sub-nav { display:flex; justify-content:space-around; margin:20px 0; }
+        .sub-nav-btn { background:#e0f2fe; color:#0277bd; border:none; padding:18px 10px; border-radius:30px; font-size:30px; font-weight:bold; flex:1; margin:0 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .sub-nav-btn.active { background:#0277bd; color:white; }
+        .nav { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); width:370px; background:white; border-radius:50px; display:flex; justify-content:space-around; padding:15px 0; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:10; }
+        .nav-item { text-align:center; font-size:24px; color:#aaa; cursor:pointer; }
+        .nav-item.active { color:#4fc3f7; }
+        .nav-icon { font-size:42px; display:block; }
+        .form-input, select { width:100%; padding:18px; font-size:30px; margin:12px 0; border:2px solid #ccc; border-radius:20px; }
+        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99; }
+        .modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:320px; max-height:65vh; overflow-y:auto; background:white; border-radius:30px; padding:30px; box-shadow:0 20px 50px rgba(0,0,0,0.4); z-index:100; box-sizing:border-box; }
+        .modal::-webkit-scrollbar { width:8px; }
+        .modal::-webkit-scrollbar-thumb { background:#81c784; border-radius:4px; }
+    </style>
+</head>
+<body>
+
+<div class="iphone">
+  <div class="screen">
+    <div class="status-bar"><div>9:41</div><div>5G　92%</div></div>
+    <div class="notch"></div>
+    
+    <div class="app-content">
+      <div class="app">
+
+        <!-- 1. 首頁 -->
+        <div id="home" class="page active">
+          <div class="header">慢悠游</div>
+          
+          <div class="card">
+            <div class="card-title">當前/下一行程</div>
+            <div class="list-item" onclick="showDetail(trips[0])">
+              南蓮園池一日遊（明日）
+              <div class="trip-info">集合：九龍城廣場 | 15人 | 已報名：陳伯母、李伯伯</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">安心守護</div>
+            <div id="reminders">
+              <div class="reminder-item" id="rem1">
+                <div class="text">下午3:00 降血壓藥</div>
+                <button onclick="confirmMed(1)">已服藥</button>
+              </div>
+              <div class="reminder-item" id="rem2">
+                <div class="text">晚上8:00 維生素補充</div>
+                <button onclick="confirmMed(2)">已服藥</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">今日為你精選</div>
+            <div id="home-recommend"></div>
+          </div>
+        </div>
+
+        <!-- 2. 行程頁 -->
+        <div id="trips" class="page">
+          <div class="header">行程</div>
+          <div class="sub-nav">
+            <button class="sub-nav-btn active" onclick="showSubSection('my-trips')">我的行程</button>
+            <button class="sub-nav-btn" onclick="showSubSection('explore-trips')">行程探索</button>
+          </div>
+
+          <div id="my-trips" class="sub-section active">
+            <div class="card">
+              <div class="card-title">我的行程</div>
+              <div id="my-trip-list">
+                <div class="list-item" onclick="showDetail(trips[0])">
+                  南蓮園池一日遊 (明日)
+                  <div class="trip-info">集合：九龍城廣場 | 15人</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="explore-trips" class="sub-section" style="display:none;">
+            <div class="card">
+              <div class="card-title">所有行程</div>
+              <div id="all-trips">
+                <!-- 行程列表将通过JavaScript动态生成 -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 朋友頁（每次點擊都刷新新人） -->
+        <div id="friends" class="page">
+          <div class="header">朋友</div>
+          <div class="sub-nav">
+            <button class="sub-nav-btn active" onclick="showSubSection('old-friends')">老友記</button>
+            <button class="sub-nav-btn" onclick="showSubSection('new-friends')">新朋友</button>
+          </div>
+          <div id="old-friends" class="sub-section active">
+            <div class="card">
+              <div class="card-title">老友記</div>
+              <div id="friend-list">
+                <div class="list-item">陳伯母（步伐慢 | 低預算 | 文化型）</div>
+                <div class="list-item">李伯伯（中等步伐 | 中預算 | 自然型）</div>
+              </div>
+            </div>
+          </div>
+          <div id="new-friends" class="sub-section" style="display:none;">
+            <div class="card">
+              <div class="card-title">智能旅伴配對</div>
+              <div class="card-text">根據你的體力、節奏、預算自動配對</div>
+              <button class="big-btn" onclick="smartMatch()">開始配對</button>
+              <div id="match-result" class="card-text" style="display:none;margin-top:20px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 我的頁 -->
+        <div id="my" class="page">
+          <div class="header">我的</div>
+          <div class="card">
+            <div class="card-title">個人旅遊偏好</div>
+            <select class="form-input" id="physical">
+              <option>體力充沛（可步行5km+）</option>
+              <option selected>一般（3-5km）</option>
+              <option>較弱（需輔助）</option>
+            </select>
+            <select class="form-input" id="rhythm">
+              <option>超慢遊（每天<2km）</option>
+              <option selected>慢遊（<3km）</option>
+              <option>正常節奏</option>
+            </select>
+            <button class="big-btn" onclick="saveProfile()">保存偏好</button>
+          </div>
+          <div class="card" id="my-trips-card" onclick="showMyTrips()">
+            <div class="card-title">我的行程</div>
+            <div id="my-trip-list2"></div>
+          </div>
+        </div>
+
+        <!-- 底部導航 -->
+        <div class="nav">
+          <div class="nav-item active" onclick="switchPage('home')"><span class="nav-icon">🏠</span>首頁</div>
+          <div class="nav-item" onclick="switchPage('trips')"><span class="nav-icon">🗓️</span>行程</div>
+          <div class="nav-item" onclick="switchPage('friends')"><span class="nav-icon">👥</span>朋友</div>
+          <div class="nav-item" onclick="switchPage('my')"><span class="nav-icon">👤</span>我的</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 彈窗 -->
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div class="modal" id="modal">
+  <div class="card-title" id="modal-title" style="font-size:34px;"></div>
+  <div class="card-text" id="modal-content" style="font-size:28px;line-height:1.9;"></div>
+  <button class="big-btn" onclick="closeDetail()">關閉</button>
+</div>
+
+<script>
+
+// 所有行程数据
+const trips = [
+  {name:"南蓮園池一日遊", time:"明日 09:30-16:30", location:"九龍城廣場巴士站", people:"15人", friends:"陳伯母、李伯伯", highlight:"賞花+太極+素食午餐+無障礙通道", suitable:"慢步+文化愛好者"},
+  {name:"維多利亞港夜遊", time:"每週五 19:00-21:30", location:"尖沙咀鐘樓旁", people:"15人", friends:"陳伯母", highlight:"幻彩詠香江+遊船+夜景攝影", suitable:"攝影愛好者"},
+  {name:"太平山頂慢步之旅", time:"每週三 10:00-15:00", location:"中環地鐵A出口", people:"12人", friends:"無", highlight:"纜車上山+環山緩步+全景觀景台", suitable:"喜歡風景人士"},
+  {name:"大嶼山生態慢遊", time:"12月3日 09:00-15:00", location:"東涌B出口", people:"20人", friends:"李伯伯", highlight:"天壇大佛+昂坪市集", suitable:"自然愛好者"},
+  {name:"九龍城懷舊之旅", time:"12月10日 10:00-14:00", location:"九龍城廣場", people:"10人", friends:"無", highlight:"啟德舊機場+九龍城寨公園", suitable:"懷舊人士"},
+  {name:"香港博物館日", time:"12月17日 10:30-16:00", location:"尖沙咀文化中心", people:"18人", friends:"無", highlight:"歷史+科學博物館", suitable:"知識型長者"},
+  // 历史行程示例
+  {name:"深圳灣公園慢遊", time:"11月15日 09:00-15:00", location:"深圳灣公園入口", people:"12人", friends:"陳伯母、李伯伯", highlight:"海濱步道漫步+紅樹林生態欣賞+野餐活動", suitable:"自然愛好者"}
+];
+
+// 已报名的未来行程
+let enrolledTrips = ["南蓮園池一日遊"];
+
+// 历史行程（用户过去参加过的行程）
+let historicalTrips = ["深圳灣公園慢遊"];
+
+function updateAllTrips() {
+  // 获取未来行程（已报名的行程）
+  const futureTripsHtml = enrolledTrips.map((t, i) => {
+    // 根据行程名称精确查找对应的行程对象
+    const tripObj = trips.find(tr => tr.name === t) || trips[0];
+    // 显示完整的行程信息，包括时间
+    const displayText = `${t} (${tripObj.time.split(' ')[0]})`;
+    // 通过索引引用行程对象，避免作用域问题
+    const tripIndex = trips.indexOf(tripObj);
+    return `<div class="list-item" onclick="showTripDetail(trips[${tripIndex}])">
+      ${displayText}
+      <div class="trip-info">集合：${tripObj.location} | ${tripObj.people}</div>
+    </div>`;
+  }).join('');
+  
+  // 获取历史行程
+  const pastTripsHtml = historicalTrips.map((t, i) => {
+    // 根据行程名称精确查找对应的行程对象
+    const tripObj = trips.find(tr => tr.name === t) || trips[0];
+    // 通过索引引用行程对象，避免作用域问题
+    const tripIndex = trips.indexOf(tripObj);
+    return `<div class="list-item" onclick="showTripDetail(trips[${tripIndex}])">
+      ${t} (歷史行程)
+      <div class="trip-info">時間：${tripObj.time.split(' ')[0]} | 參與人數：${tripObj.people}</div>
+    </div>`;
+  }).join('');
+  
+  // 组合未来行程和历史行程
+  const html = futureTripsHtml + (pastTripsHtml ? `<div style="margin-top: 20px;"><strong>歷史行程</strong></div>${pastTripsHtml}` : '');
+  
+  document.getElementById('my-trip-list').innerHTML = html;
+  document.getElementById('my-trip-list2').innerHTML = html;
+}
+
+function updateExploreTrips() {
+  const html = trips.map((trip, index) => {
+    // 判断是否为历史行程
+    const isHistorical = !isFutureTrip(trip.time);
+    
+    if (isHistorical) {
+      // 历史行程显示不同的UI
+      return `<div class="list-item">
+        ${trip.name} (歷史行程)
+        <div class="trip-info">時間：${trip.time.split(' ')[0]} | 參與人數：${trip.people}</div>
+        <div class="btn-row">
+          <button class="half-btn detail-btn" onclick="event.stopPropagation(); showTripDetail(trips[${index}])">查看回憶</button>
+        </div>
+      </div>`;
+    } else {
+      // 未来行程保持原有UI
+      const timeInfo = trip.time.includes("每週") ? trip.time : trip.time.split(' ')[0];
+      const enrolledFriends = trip.friends !== "無" ? `已報名：${trip.friends}` : "";
+      return `<div class="list-item">
+        ${trip.name} · ${timeInfo}
+        <div class="trip-info">集合：${trip.location} | 預期${trip.people}${enrolledFriends ? ` | ${enrolledFriends}` : ""}</div>
+        <div class="btn-row">
+          <button class="half-btn detail-btn" onclick="event.stopPropagation(); showDetail(trips[${index}])">查看詳情</button>
+          <button class="half-btn enroll-btn" onclick="event.stopPropagation(); enrollTrip(trips[${index}])">報名參加</button>
+        </div>
+      </div>`;
+    }
+  }).join('');
+  
+  document.getElementById('all-trips').innerHTML = html;
+}
+
+function updateHomeRecommend() {
+  const available = trips.slice(1).filter(t => !enrolledTrips.some(e => e === t.name));
+  const best = available[0] || null;
+  if (best) {
+    document.getElementById('home-recommend').innerHTML = `
+      <div class="list-item" onclick="showDetail(trips[${trips.indexOf(best)}])">
+        ${best.name}
+        <div class="trip-info">集合：${best.location} | ${best.people} | 已報名：${best.friends}</div>
+        <div class="btn-row">
+          <button class="half-btn detail-btn" onclick="event.stopPropagation(); showDetail(trips[${trips.indexOf(best)}])">查看詳情</button>
+          <button class="half-btn enroll-btn" onclick="event.stopPropagation(); enrollTrip(trips[${trips.indexOf(best)}])">報名參加</button>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('home-recommend').innerHTML = '<div class="card-text">已為你精選完所有合適行程～</div>';
+  }
+}
+
+function enrollTrip(trip) {
+  if (confirm(`確定報名「${trip.name}」嗎？`)) {
+    // 使用统一的格式添加到已报名行程列表
+    enrolledTrips.push(`${trip.name}`);
+    updateAllTrips();
+    updateHomeRecommend();
+    alert('報名成功！已加入我的行程');
+  }
+}
+
+function showDetail(trip) {
+  if (event) event.stopPropagation();
+  document.getElementById('modal-title').innerText = trip.name;
+  document.getElementById('modal-content').innerHTML = `
+    時間：${trip.time}<br>
+    集合地點：${trip.location}<br>
+    預期人數：${trip.people}<br>
+    已報名老友：${trip.friends}<br><br>
+    行程亮點：${trip.highlight}<br>
+    適合人群：${trip.suitable}<br><br>
+    全程無障礙、專車接送、步行少於3公里，安心出遊！
+  `;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('modal').style.display = 'block';
+}
+
+function closeDetail() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('modal').style.display = 'none';
+}
+
+function confirmMed(id) {
+  const item = document.getElementById('rem'+id);
+  item.classList.add('confirmed');
+  item.querySelector('button').textContent = '已確認';
+  item.querySelector('button').disabled = true;
+  alert('已確認服藥');
+}
+
+// 每次點「開始配對」都會刷新新人
+function smartMatch() {
+  const candidates = [
+    "張伯伯（步伐慢 | 低預算 | 文化型）",
+    "王婆婆（超慢遊 | 低預算 | 自然型）",
+    "劉伯母（一般體力 | 中預算 | 攝影愛好）",
+    "陳伯伯（體力充沛 | 中預算 | 美食型）",
+    "何婆婆（較弱體力 | 低預算 | 宗教型）"
+  ];
+  const random = candidates[Math.floor(Math.random() * candidates.length)];
+  document.getElementById('match-result').innerHTML = `
+    推薦旅伴：${random}<br>
+    <button class="big-btn" style="margin-top:20px;" onclick="addFriend('${random}'); this.disabled=true;">添加為老友</button>
+  `;
+  document.getElementById('match-result').style.display = 'block';
+}
+
+function addFriend(name) {
+  document.getElementById('friend-list').innerHTML += `<div class="list-item">${name}</div>`;
+  alert('已成功添加老友！');
+}
+
+function saveProfile() {
+  alert('個人偏好已更新！');
+}
+
+function showMyTrips() {
+  // 跳转到行程页面的"我的行程"标签
+  switchPage('trips');
+  showSubSection('my-trips');
+}
+
+// 判断行程是历史行程还是未来行程
+function isFutureTrip(tripTime) {
+  // 简单判断：如果包含"明日"或"每週"，则为未来行程
+  // 如果包含具体日期且不是过去的日期，则为未来行程
+  // 对于历史行程，我们假设它们不会包含"明日"或"每週"，并且如果是过去的日期也不会显示报名按钮
+  return tripTime.includes("明日") || tripTime.includes("每週");
+}
+
+// 显示行程详情（根据历史或未来行程显示不同内容）
+function showTripDetail(trip) {
+  if (event) event.stopPropagation();
+  
+  // 判断是否为未来行程
+  const isFuture = isFutureTrip(trip.time);
+  
+  // 检查行程是否已报名
+  const isEnrolled = enrolledTrips.includes(trip.name);
+  
+  document.getElementById('modal-title').innerText = trip.name;
+  
+  if (isFuture) {
+    // 未来行程显示基础信息
+    document.getElementById('modal-content').innerHTML = `
+      時間：${trip.time}<br>
+      集合地點：${trip.location}<br>
+      預期人數：${trip.people}<br>
+      已報名老友：${trip.friends}<br><br>
+      行程亮點：${trip.highlight}<br>
+      適合人群：${trip.suitable}<br><br>
+      全程無障礙、專車接送、步行少於3公里，安心出遊！
+      <br><br>
+      ${isEnrolled ? 
+        `<button class="big-btn" style="background:#ff8a65;" onclick="unenrollTrip('${trip.name}')">申請退出</button>` : 
+        `<button class="big-btn" onclick="enrollTripFromDetail('${trip.name}')">報名參加</button>`}
+    `;
+  } else {
+    // 历史行程显示回忆功能
+    document.getElementById('modal-content').innerHTML = `
+      時間：${trip.time}<br>
+      集合地點：${trip.location}<br>
+      參與人數：${trip.people}<br>
+      同行老友：${trip.friends}<br><br>
+      行程亮點回顧：${trip.highlight}<br><br>
+      <div style="text-align:center; margin:20px 0;">
+        <div style="background:#e0f2fe; border-radius:15px; padding:15px; margin-bottom:15px;">
+          <h3 style="margin:0 0 10px 0; color:#0277bd;">行程回憶</h3>
+          <p style="margin:0;">這裡可以顯示照片、遊記等回憶內容</p>
+        </div>
+        <button class="big-btn" style="background:#ffb74d;" onclick="shareMemory()">分享回憶</button>
+      </div>
+    `;
+  }
+  
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('modal').style.display = 'block';
+}
+
+// 从详情页面报名参加行程
+function enrollTripFromDetail(tripName) {
+  const trip = trips.find(t => t.name === tripName);
+  if (trip && confirm(`確定報名「${trip.name}」嗎？`)) {
+    enrolledTrips.push(`${trip.name}`);
+    updateAllTrips();
+    updateHomeRecommend();
+    alert('報名成功！已加入我的行程');
+    closeDetail();
+  }
+}
+
+// 从详情页面取消报名
+function unenrollTrip(tripName) {
+  if (confirm(`確定要退出「${tripName}」嗎？`)) {
+    // 从已报名列表中移除
+    enrolledTrips = enrolledTrips.filter(name => name !== tripName);
+    updateAllTrips();
+    updateHomeRecommend();
+    alert('已成功退出該行程');
+    closeDetail();
+  }
+}
+
+// 分享回忆功能
+function shareMemory() {
+  alert('感謝分享您的美好回憶！');
+  closeDetail();
+}
+
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.closest('.nav-item').classList.add('active');
+}
+
+function showSubSection(id) {
+  document.querySelectorAll('.sub-section').forEach(s => s.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // 当切换到"所有行程"标签时，更新行程列表
+  if (id === 'explore-trips') {
+    updateExploreTrips();
+  }
+}
+
+window.onload = function() {
+  updateAllTrips();
+  updateHomeRecommend();
+  updateExploreTrips();
+};
+
+setTimeout(() => {
+  if (document.getElementById('home').classList.contains('active')) {
+    alert("王伯伯，歡迎回來！記得查看安心守護同今日精選呀～");
+  }
+}, 8000);
+</script>
+</body>
+</html>
